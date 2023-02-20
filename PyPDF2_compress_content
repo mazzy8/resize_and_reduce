@@ -1,0 +1,33 @@
+#!/usr/bin/python3
+from PyPDF2 import PdfReader, PdfWriter
+import os
+from datetime import datetime
+
+
+FOLDER_AND_FILES = os.walk('.')
+
+
+print(f'Start script: {datetime.now()}')
+for root, dirs, files in FOLDER_AND_FILES:
+    for file in files:
+        filepath = os.path.join(root, file)
+        if file.endswith(".pdf"):
+            reader = PdfReader(filepath)
+            writer = PdfWriter()
+            if if reader.metadata is None or reader.metadata.get("/Creator") != '(Compressed)':
+                file_size = os.path.getsize(filepath)
+                print(f'#{datetime.now()}# start compress,{file} size: {file_size}', end=' ')
+                for page in reader.pages:
+                    page.compress_content_streams()  # This is CPU intensive!
+                    writer.add_page(page)
+                writer.add_metadata({"/Creator": '(Compressed)'})
+                try:
+                    with open(filepath, "wb") as f:
+                        writer.write(f)
+                    print(f'finish compress, diff = {file_size - os.path.getsize(filepath)}')
+                except OSError:
+                    print('Error OS')
+            else:
+                print(f'{file} has mark "compressed"')
+print(f'Stop script: {datetime.now()}')
+
