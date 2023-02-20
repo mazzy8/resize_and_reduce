@@ -1,0 +1,70 @@
+#!usr/bin/python3
+import fitz
+import os
+from datetime import datetime
+import logging
+
+
+logging.basicConfig(level=logging.INFO, filename=f"pdf_log_{datetime.now().date()}.log",
+                    format="%(asctime)s %(levelname)s %(message)s")
+FOLDER_AND_FILES = os.walk('.')
+TMP_DIR = "tmp_dir"
+FILES_COUNT = 0
+RESIZE_COUNT = 0
+DIF_SIZE = 0
+
+
+def clear_temp():
+    tmp_files = os.listdir(TMP_DIR)
+    for file in tmp_files:
+        if file[:4] == 'page':
+            os.remove(os.path.join(TMP_DIR, file))
+
+
+clear_temp()
+
+logging.info(f'#####################Start script#####################')
+
+for root, dirs, files in FOLDER_AND_FILES:
+    for file in files:
+        filepath = os.path.join(root, file)
+        if file.endswith(".pdf"):
+            FILES_COUNT += 1
+            try:
+                size_file = os.path.getsize(filepath)
+                doc = fitz.open(filepath)
+                if doc.metadata.get("creator") != 'Compressed':
+                    if not os.path.isdir("tmp_dir"):
+                        os.mkdir("tmp_dir")
+                    for page in doc:
+                        pix = page.get_pixmap(dpi=150, colorspace='GRAY')
+                        pix.pil_save(f"{TMP_DIR}/page-%i.jpeg" % page.number, quality=45)
+                    doc.close()
+                    doc = fitz.open()
+                    imglist = os.listdir(TMP_DIR)  # list of pictures
+                    imgcount = len(imglist)
+                    imglist.sort()
+                    for image in imglist:
+                        if image[:4] == 'page':
+                            img = fitz.open(os.path.join(TMP_DIR, image))
+                            rect = img[0].rect
+                            pdfbytes = img.convert_to_pdf()
+                            img.close()
+                            imgPDF = fitz.open("pdf", pdfbytes)
+                            page = doc.new_page(width=rect.width,
+                                                height=rect.height)
+                            page.show_pdf_page(rect, imgPDF, 0)
+                            os.remove(os.path.join(TMP_DIR, image))
+                    doc.set_metadata({'creator': 'Compressed'})
+                    doc.save(f'{filepath}')
+                    size_file_after = os.path.getsize(filepath)
+                    dif_size = int((size_file - size_file_after) / 1024)
+                    logging.info(f'Write meta to "{filepath}" and save. Resize: {dif_size} Kb')
+                    DIF_SIZE += dif_size
+                    RESIZE_COUNT += 1
+                else:
+                    logging.info(f'Skip "{filepath}". File has meta "Compressed".')
+                    doc.close()
+            except Exception as e:
+                logging.error(f'Error: {e}')
+logging.info(f'Stop script. All_files = {FILES_COUNT}, resize_files = {RESIZE_COUNT}, diff_size = {DIF_SIZE}Kb')
