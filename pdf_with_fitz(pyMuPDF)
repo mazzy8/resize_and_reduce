@@ -1,4 +1,4 @@
-#!usr/bin/python3
+#!/usr/bin/python3
 import fitz
 import os
 from datetime import datetime
@@ -15,10 +15,13 @@ DIF_SIZE = 0
 
 
 def clear_temp():
-    tmp_files = os.listdir(TMP_DIR)
-    for file in tmp_files:
-        if file[:4] == 'page':
-            os.remove(os.path.join(TMP_DIR, file))
+    if os.path.isdir("tmp_dir"):
+        tmp_files = os.listdir(TMP_DIR)
+        for file in tmp_files:
+            if file[:4] == 'page':
+                os.remove(os.path.join(TMP_DIR, file))
+    else:
+        os.mkdir("tmp_dir")
 
 
 clear_temp()
@@ -34,8 +37,6 @@ for root, dirs, files in FOLDER_AND_FILES:
                 size_file = os.path.getsize(filepath)
                 doc = fitz.open(filepath)
                 if doc.metadata.get("creator") != 'Compressed':
-                    if not os.path.isdir("tmp_dir"):
-                        os.mkdir("tmp_dir")
                     for page in doc:
                         pix = page.get_pixmap(dpi=150, colorspace='GRAY')
                         pix.pil_save(f"{TMP_DIR}/page-%i.jpeg" % page.number, quality=45)
