@@ -12,6 +12,7 @@ FOLDER_AND_FILES = os.walk('.')
 FILES_COUNT = 0
 RESIZE_COUNT = 0
 DIF_SIZE = 0
+START_DATE = datetime.now()
 
 logging.info(f'#####################Start script#####################')
 for root, dirs, files in FOLDER_AND_FILES:
@@ -44,4 +45,5 @@ for root, dirs, files in FOLDER_AND_FILES:
                         continue
             except Exception as e:
                 logging.error(f'Error: {e}')
-logging.info(f'Stop script. All_image_files = {FILES_COUNT}, resize_files = {RESIZE_COUNT}, diff_size = {DIF_SIZE} Kb')
+logging.info(f'Stop script. Time = {datetime.now() - START_DATE},'
+             f'All_image_files = {FILES_COUNT}, resize_files = {RESIZE_COUNT}, diff_size = {DIF_SIZE} Kb')
