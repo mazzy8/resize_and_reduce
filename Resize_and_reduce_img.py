@@ -5,7 +5,7 @@ from datetime import datetime
 import logging
 
 
-logging.basicConfig(level=logging.INFO, filename=f"pdf_log_{datetime.now().date()}.log",
+logging.basicConfig(level=logging.INFO, filename=f"img_log_{datetime.now().date()}.log",
                     format="%(asctime)s %(levelname)s %(message)s")
 
 FOLDER_AND_FILES = os.walk('.')
