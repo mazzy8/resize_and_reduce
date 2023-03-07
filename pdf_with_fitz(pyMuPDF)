@@ -12,6 +12,7 @@ TMP_DIR = "tmp_dir"
 FILES_COUNT = 0
 RESIZE_COUNT = 0
 DIF_SIZE = 0
+START_DATE = datetime.now()
 
 
 def clear_temp():
@@ -64,8 +65,9 @@ for root, dirs, files in FOLDER_AND_FILES:
                     DIF_SIZE += dif_size
                     RESIZE_COUNT += 1
                 else:
-                    logging.info(f'Skip "{filepath}". File has meta "Compressed".')
+                    # logging.info(f'Skip "{filepath}". File has meta "Compressed".')
                     doc.close()
             except Exception as e:
                 logging.error(f'Error: {e}')
-logging.info(f'Stop script. All_files = {FILES_COUNT}, resize_files = {RESIZE_COUNT}, diff_size = {DIF_SIZE}Kb')
+logging.info(f'Stop script. Time = {datetime.now() - START_DATE},'
+             f'All_files = {FILES_COUNT}, resize_files = {RESIZE_COUNT}, diff_size = {DIF_SIZE} Kb')
