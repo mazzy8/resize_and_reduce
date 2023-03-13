@@ -16,13 +16,14 @@ START_DATE = datetime.now()
 
 
 def clear_temp():
-    if os.path.isdir("tmp_dir"):
+    if not os.path.isdir(TMP_DIR):
+        os.mkdir(TMP_DIR)
+    else:
         tmp_files = os.listdir(TMP_DIR)
         for file in tmp_files:
             if file[:4] == 'page':
                 os.remove(os.path.join(TMP_DIR, file))
-    else:
-        os.mkdir("tmp_dir")
+        
 
 
 clear_temp()
@@ -43,7 +44,7 @@ for root, dirs, files in FOLDER_AND_FILES:
                         pix.pil_save(f"{TMP_DIR}/page-%i.jpeg" % page.number, quality=45)
                     doc.close()
                     doc = fitz.open()
-                    imglist = os.listdir(TMP_DIR)  # list of pictures
+                    imglist = os.listdir(TMP_DIR) 
                     imgcount = len(imglist)
                     imglist.sort()
                     for image in imglist:
