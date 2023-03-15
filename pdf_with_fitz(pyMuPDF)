@@ -59,7 +59,7 @@ for root, dirs, files in FOLDER_AND_FILES:
                             page.show_pdf_page(rect, imgPDF, 0)
                             os.remove(os.path.join(TMP_DIR, image))
                     doc.set_metadata({'creator': 'Compressed'})
-                    doc.save(f'{filepath}')
+                    doc.save(filepath)
                     size_file_after = os.path.getsize(filepath)
                     dif_size = int((size_file - size_file_after) / 1024)
                     logging.info(f'Write meta to "{filepath}" and save. Resize: {dif_size} Kb')
