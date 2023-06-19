@@ -23,9 +23,9 @@ for root, dirs, files in FOLDER_AND_FILES:
         if file.endswith(".pdf"):
             FILES_COUNT += 1
             try:
-                size_file = os.path.getsize(filepath)
                 doc = fitz.open(filepath)
                 if doc.metadata.get("creator") != 'Compressed':
+                    file_size = os.path.getsize(filepath)
                     new_doc = fitz.open()
                     for page in doc:
                         # Получить изображение формата PIL.Image 
@@ -47,8 +47,8 @@ for root, dirs, files in FOLDER_AND_FILES:
                     new_doc.save(filepath)
 
                     # обсчет размеров файлов
-                    size_file_after = os.path.getsize(filepath)
-                    dif_size = int((size_file - size_file_after) / 1024)
+                    file_size_after = os.path.getsize(filepath)
+                    dif_size = int((file_size - file_size_after) / 1024)
                     logging.info(f'Write meta to "{filepath}" and save. Resize: {dif_size} Kb')
                     DIF_SIZE += dif_size
                     RESIZE_COUNT += 1
