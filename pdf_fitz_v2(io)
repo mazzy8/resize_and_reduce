@@ -1,0 +1,61 @@
+#!/usr/bin/python3
+import fitz
+from PIL import Image
+import io
+import os
+from datetime import datetime
+import logging
+
+
+logging.basicConfig(level=logging.INFO, filename=f"pdf_log_{datetime.now().date()}.log",
+                    format="%(asctime)s %(levelname)s %(message)s")
+FOLDER_AND_FILES = os.walk('.')
+FILES_COUNT = 0
+RESIZE_COUNT = 0
+DIF_SIZE = 0
+START_DATE = datetime.now()
+
+logging.info(f'#####################Start script#####################')
+
+for root, dirs, files in FOLDER_AND_FILES:
+    for file in files:
+        filepath = os.path.join(root, file)
+        if file.endswith(".pdf"):
+            FILES_COUNT += 1
+            try:
+                size_file = os.path.getsize(filepath)
+                doc = fitz.open(filepath)
+                if doc.metadata.get("creator") != 'Compressed':
+                    new_doc = fitz.open()
+                    for page in doc:
+                        # Получить изображение формата PIL.Image 
+                        pix = page.get_pixmap(dpi=150, colorspace='GRAY')
+                        img = Image.frombytes("L", (pix.width, pix.height), pix.samples)
+
+                        # Преобразовать изображение в формат PIL.Image с параметром 'quality' = 45
+                        with io.BytesIO() as img_buffer:
+                            img.save(img_buffer, "JPEG", quality=45)
+                            img_bytes = img_buffer.getvalue()
+
+                        # Сохранить преобразованное изображение в новый PDF файл
+                        new_page = new_doc.new_page(width=pix.width, height=pix.height)
+                        new_page.insert_image(new_page.rect, stream=img_bytes)
+
+                    doc.close()
+                    # Сохранить новый PDF файл с метадатой
+                    new_doc.set_metadata({'creator': 'Compressed'})
+                    new_doc.save(filepath)
+
+                    # обсчет размеров файлов
+                    size_file_after = os.path.getsize(filepath)
+                    dif_size = int((size_file - size_file_after) / 1024)
+                    logging.info(f'Write meta to "{filepath}" and save. Resize: {dif_size} Kb')
+                    DIF_SIZE += dif_size
+                    RESIZE_COUNT += 1
+                else:
+                    # logging.info(f'Skip "{filepath}". File has meta "Compressed".')
+                    doc.close()
+            except Exception as e:
+                logging.error(f'Error: {e}')
+logging.info(f'Stop script. Time = {datetime.now() - START_DATE},'
+             f'All_files = {FILES_COUNT}, resize_files = {RESIZE_COUNT}, diff_size = {DIF_SIZE} Kb')
